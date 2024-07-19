@@ -38,7 +38,7 @@ impl Lexer {
             '+' => new_token(TokenType::Plus, self.char),
             '{' => new_token(TokenType::Lbrace, self.char),
             '}' => new_token(TokenType::Rbrace, self.char),
-            '\0' => new_token(TokenType::Eof, self.char),
+            '\0' => new_token(TokenType::Eof, '\0'),
             _ => new_token(TokenType::Illegal, '_'),
         }
     }
