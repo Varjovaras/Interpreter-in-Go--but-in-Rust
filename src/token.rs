@@ -14,7 +14,6 @@ impl Token {
 }
 
 #[derive(Debug, PartialEq)]
-#[allow(dead_code)]
 pub enum TokenType {
     Illegal,
     Eof,
