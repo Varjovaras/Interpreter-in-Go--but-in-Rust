@@ -30,3 +30,18 @@ pub enum TokenType {
     Function,
     Let,
 }
+
+impl TokenType {
+    fn from_keyword(ident: &str) -> Self {
+        // dbg!(ident);
+        match ident {
+            "fn" => TokenType::Function,
+            "let" => TokenType::Let,
+            _ => TokenType::Ident,
+        }
+    }
+}
+
+pub fn lookup_ident(ident: &str) -> TokenType {
+    TokenType::from_keyword(ident)
+}

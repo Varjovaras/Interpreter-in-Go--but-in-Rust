@@ -1,5 +1,6 @@
-use crate::token::{Token, TokenType};
+use crate::token::{lookup_ident, Token, TokenType};
 
+#[derive(Debug)]
 pub struct Lexer {
     input: String,
     position: usize,
@@ -9,27 +10,31 @@ pub struct Lexer {
 
 impl Lexer {
     pub fn new(input: &str) -> Self {
-        Self {
+        let mut a = Self {
             input: input.to_string(),
             position: 0,
-            read_position: 1,
+            read_position: 0,
             char: input.chars().nth(0).unwrap(),
-        }
+        };
+        a.read_char();
+        a
     }
 
     pub fn read_char(&mut self) {
-        if self.position >= self.input.len() {
+        // dbg!(self.char);
+        if self.read_position >= self.input.len() {
             self.char = '\0';
         } else {
-            self.char = self.input.chars().nth(self.position).unwrap()
+            self.char = self.input.chars().nth(self.read_position).unwrap();
         }
         self.position = self.read_position;
         self.read_position += 1;
     }
 
     pub fn next_token(&mut self) -> Token {
-        self.read_char();
-        match self.char {
+        self.skip_whitespace();
+        dbg!(self.char);
+        let token = match self.char {
             '=' => new_token(TokenType::Assign, self.char),
             ';' => new_token(TokenType::Semicolon, self.char),
             '(' => new_token(TokenType::Lparen, self.char),
@@ -39,7 +44,47 @@ impl Lexer {
             '{' => new_token(TokenType::Lbrace, self.char),
             '}' => new_token(TokenType::Rbrace, self.char),
             '\0' => new_token(TokenType::Eof, '\0'),
-            _ => new_token(TokenType::Illegal, '_'),
+            _ => {
+                if is_letter(self.char) {
+                    let literal = self.read_identifier();
+                    return Token {
+                        kind: lookup_ident(&literal),
+                        literal,
+                    };
+                } else if is_digit(self.char) {
+                    return Token {
+                        kind: TokenType::Int,
+                        literal: self.read_number(),
+                    };
+                } else {
+                    return new_token(TokenType::Illegal, '_');
+                }
+            }
+        };
+        self.read_char();
+        token
+    }
+
+    fn read_identifier(&mut self) -> String {
+        let start_position = self.position;
+        while is_letter(self.char) {
+            self.read_char();
+        }
+        // dbg!(self.input[start_position..self.position].to_string());
+        self.input[start_position..self.position].to_string()
+    }
+
+    fn read_number(&mut self) -> String {
+        let start_position = self.position;
+        while is_digit(self.char) {
+            self.read_char();
+        }
+        self.input[start_position..self.position].to_string()
+    }
+
+    fn skip_whitespace(&mut self) {
+        while self.char == ' ' || self.char == '\t' || self.char == '\n' || self.char == '\r' {
+            self.read_char();
         }
     }
 }
@@ -50,13 +95,22 @@ fn new_token(token_type: TokenType, char: char) -> Token {
         literal: char.to_string(),
     }
 }
+
+fn is_letter(ch: char) -> bool {
+    ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ch == '_'
+}
+
+fn is_digit(ch: char) -> bool {
+    ch >= '0' && ch <= '9'
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::token::TokenType;
 
     #[test]
-    fn test_next_token() {
+    fn test_next_token_with_identifiers() {
         let input = "=+(){},;";
         let mut lexer = Lexer::new(input);
 
@@ -83,6 +137,71 @@ mod tests {
                 tok.literal, *expected_literal,
                 "tests[{}] - literal wrong. expected={}, got={}",
                 i, expected_literal, tok.literal
+            );
+        }
+    }
+
+    #[test]
+    fn test_next_token_with_actual_syntax() {
+        let input = "let five = 5;
+        let ten = 10;
+        let add = fn(x, y) {
+            x + y;
+        };
+        let result = add(five, ten);
+        ";
+        let mut lexer = Lexer::new(input);
+        let tests = vec![
+            (TokenType::Let, "let"),
+            (TokenType::Ident, "five"),
+            (TokenType::Assign, "="),
+            (TokenType::Int, "5"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::Let, "let"),
+            (TokenType::Ident, "ten"),
+            (TokenType::Assign, "="),
+            (TokenType::Int, "10"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::Let, "let"),
+            (TokenType::Ident, "add"),
+            (TokenType::Assign, "="),
+            (TokenType::Function, "fn"),
+            (TokenType::Lparen, "("),
+            (TokenType::Ident, "x"),
+            (TokenType::Comma, ","),
+            (TokenType::Ident, "y"),
+            (TokenType::Rparen, ")"),
+            (TokenType::Lbrace, "{"),
+            (TokenType::Ident, "x"),
+            (TokenType::Plus, "+"),
+            (TokenType::Ident, "y"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::Rbrace, "}"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::Let, "let"),
+            (TokenType::Ident, "result"),
+            (TokenType::Assign, "="),
+            (TokenType::Ident, "add"),
+            (TokenType::Lparen, "("),
+            (TokenType::Ident, "five"),
+            (TokenType::Comma, ","),
+            (TokenType::Ident, "ten"),
+            (TokenType::Rparen, ")"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::Eof, "\0"),
+        ];
+        for (i, (expected_type, expected_literal)) in tests.iter().enumerate() {
+            let tok = lexer.next_token();
+
+            assert_eq!(
+                tok.literal, *expected_literal,
+                "tests[{}] - literal wrong. expected={}, got={}",
+                i, expected_literal, tok.literal
+            );
+            assert_eq!(
+                tok.kind, *expected_type,
+                "tests[{}] - tokentype wrong. expected={:?}, got={:?}",
+                i, expected_type, tok.kind
             );
         }
     }
