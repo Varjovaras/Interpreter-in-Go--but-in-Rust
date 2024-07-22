@@ -97,11 +97,11 @@ fn new_token(token_type: TokenType, char: char) -> Token {
 }
 
 fn is_letter(ch: char) -> bool {
-    ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ch == '_'
+    ch.is_ascii_lowercase() || ch.is_ascii_uppercase() || ch == '_'
 }
 
 fn is_digit(ch: char) -> bool {
-    ch >= '0' && ch <= '9'
+    ch.is_ascii_digit()
 }
 
 #[cfg(test)]
