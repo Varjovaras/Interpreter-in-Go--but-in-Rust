@@ -7,6 +7,13 @@ edition = "2021"
 enum_glob_use = "deny"
 pedantic = { level = "deny", priority = -1 }
 nursery = { level = "deny", priority = -1 }
+correctness = { level = "deny", priority = -1 }
+complexity = { level = "deny", priority = -1 }
+perf = { level = "deny", priority = -1 }
+# cargo = { level = "deny", priority = -1 }
+# restriction = { level = "deny", priority = -1 }
+
+
 unwrap_used = "allow"
 
 
