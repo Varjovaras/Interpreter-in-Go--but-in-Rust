@@ -156,7 +156,14 @@ mod tests {
         };
            let result = add(five, ten);
            !-/*5;
-           5 < 10 > 5;";
+           5 < 10 > 5;
+           
+           if (5 < 10) {
+                return true;
+           } else {
+                return false;
+           }
+           ";
 
         let mut lexer = Lexer::new(input);
         let tests = vec![
@@ -208,22 +215,22 @@ mod tests {
             (TokenType::Gt, ">"),
             (TokenType::Int, "5"),
             (TokenType::Semicolon, ";"),
-            // (TokenType::If, "if"),
-            // (TokenType::Lparen, "("),
-            // (TokenType::Int, "5"),
-            // (TokenType::Lt, "<"),
-            // (TokenType::Int, "10"),
-            // (TokenType::Rparen, ")"),
-            // (TokenType::Lbrace, "{"),
-            // (TokenType::Return, "return"),
-            // (TokenType::True, "true"),
-            // (TokenType::Semicolon, ";"),
-            // (TokenType::Rbrace, "}"),
-            // (TokenType::Else, "else"),
-            // (TokenType::Lbrace, "{"),
-            // (TokenType::Return, "return"),
-            // (TokenType::False, "false"),
-            // (TokenType::Semicolon, ";"),
+            (TokenType::If, "if"),
+            (TokenType::Lparen, "("),
+            (TokenType::Int, "5"),
+            (TokenType::Lt, "<"),
+            (TokenType::Int, "10"),
+            (TokenType::Rparen, ")"),
+            (TokenType::Lbrace, "{"),
+            (TokenType::Return, "return"),
+            (TokenType::True, "true"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::Rbrace, "}"),
+            (TokenType::Else, "else"),
+            (TokenType::Lbrace, "{"),
+            (TokenType::Return, "return"),
+            (TokenType::False, "false"),
+            (TokenType::Semicolon, ";"),
             // (TokenType::Rbrace, "}"),
             // (TokenType::Int, "10"),
             // (TokenType::Eq, "=="),
