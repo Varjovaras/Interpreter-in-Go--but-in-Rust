@@ -33,23 +33,37 @@ impl Lexer {
 
     pub fn next_token(&mut self) -> Token {
         self.skip_whitespace();
-        dbg!(self.char);
-        let token = match self.char {
-            '=' => new_token(TokenType::Assign, self.char),
-            ';' => new_token(TokenType::Semicolon, self.char),
-            '(' => new_token(TokenType::Lparen, self.char),
-            ')' => new_token(TokenType::Rparen, self.char),
-            ',' => new_token(TokenType::Comma, self.char),
-            '+' => new_token(TokenType::Plus, self.char),
-            '-' => new_token(TokenType::Minus, self.char),
-            '!' => new_token(TokenType::Bang, self.char),
-            '/' => new_token(TokenType::Slash, self.char),
-            '*' => new_token(TokenType::Asterisk, self.char),
-            '<' => new_token(TokenType::Lt, self.char),
-            '>' => new_token(TokenType::Gt, self.char),
-            '{' => new_token(TokenType::Lbrace, self.char),
-            '}' => new_token(TokenType::Rbrace, self.char),
-            '\0' => new_token(TokenType::Eof, '\0'),
+        let char = self.char;
+        let token = match char {
+            '=' => {
+                if self.peek_char() != Some('=') {
+                    new_token(TokenType::Assign, self.char_to_string())
+                } else {
+                    self.read_char();
+                    new_token(TokenType::Eq, "==".to_string())
+                }
+            }
+            ';' => new_token(TokenType::Semicolon, self.char_to_string()),
+            '(' => new_token(TokenType::LParen, self.char_to_string()),
+            ')' => new_token(TokenType::RParen, self.char_to_string()),
+            ',' => new_token(TokenType::Comma, self.char_to_string()),
+            '+' => new_token(TokenType::Plus, self.char_to_string()),
+            '-' => new_token(TokenType::Minus, self.char_to_string()),
+            '!' => {
+                if self.peek_char() == Some('=') {
+                    self.read_char();
+                    new_token(TokenType::NotEq, "!=".to_string())
+                } else {
+                    new_token(TokenType::Bang, self.char_to_string())
+                }
+            }
+            '/' => new_token(TokenType::Slash, self.char_to_string()),
+            '*' => new_token(TokenType::Asterisk, self.char_to_string()),
+            '<' => new_token(TokenType::LT, self.char_to_string()),
+            '>' => new_token(TokenType::GT, self.char_to_string()),
+            '{' => new_token(TokenType::LBrace, self.char_to_string()),
+            '}' => new_token(TokenType::RBrace, self.char_to_string()),
+            '\0' => new_token(TokenType::Eof, '\0'.to_string()),
             _ => {
                 if is_letter(self.char) {
                     let literal = self.read_identifier();
@@ -63,7 +77,7 @@ impl Lexer {
                         literal: self.read_number(),
                     };
                 } else {
-                    return new_token(TokenType::Illegal, '_');
+                    return new_token(TokenType::Illegal, '_'.to_string());
                 }
             }
         };
@@ -93,12 +107,24 @@ impl Lexer {
             self.read_char();
         }
     }
+
+    fn peek_char(&self) -> Option<char> {
+        if self.read_position >= self.input.len() {
+            None
+        } else {
+            Some(self.input.chars().nth(self.read_position).unwrap())
+        }
+    }
+
+    fn char_to_string(&self) -> String {
+        self.char.to_string()
+    }
 }
 
-fn new_token(token_type: TokenType, char: char) -> Token {
+fn new_token(token_type: TokenType, char: String) -> Token {
     Token {
         kind: token_type,
-        literal: char.to_string(),
+        literal: char,
     }
 }
 
@@ -123,10 +149,10 @@ mod tests {
         let tests = vec![
             (TokenType::Assign, "="),
             (TokenType::Plus, "+"),
-            (TokenType::Lparen, "("),
-            (TokenType::Rparen, ")"),
-            (TokenType::Lbrace, "{"),
-            (TokenType::Rbrace, "}"),
+            (TokenType::LParen, "("),
+            (TokenType::RParen, ")"),
+            (TokenType::LBrace, "{"),
+            (TokenType::RBrace, "}"),
             (TokenType::Comma, ","),
             (TokenType::Semicolon, ";"),
             (TokenType::Eof, "\0"),
@@ -163,6 +189,9 @@ mod tests {
            } else {
                 return false;
            }
+
+           10 == 10;
+           10 != 9;
            ";
 
         let mut lexer = Lexer::new(input);
@@ -181,27 +210,27 @@ mod tests {
             (TokenType::Ident, "add"),
             (TokenType::Assign, "="),
             (TokenType::Function, "fn"),
-            (TokenType::Lparen, "("),
+            (TokenType::LParen, "("),
             (TokenType::Ident, "x"),
             (TokenType::Comma, ","),
             (TokenType::Ident, "y"),
-            (TokenType::Rparen, ")"),
-            (TokenType::Lbrace, "{"),
+            (TokenType::RParen, ")"),
+            (TokenType::LBrace, "{"),
             (TokenType::Ident, "x"),
             (TokenType::Plus, "+"),
             (TokenType::Ident, "y"),
             (TokenType::Semicolon, ";"),
-            (TokenType::Rbrace, "}"),
+            (TokenType::RBrace, "}"),
             (TokenType::Semicolon, ";"),
             (TokenType::Let, "let"),
             (TokenType::Ident, "result"),
             (TokenType::Assign, "="),
             (TokenType::Ident, "add"),
-            (TokenType::Lparen, "("),
+            (TokenType::LParen, "("),
             (TokenType::Ident, "five"),
             (TokenType::Comma, ","),
             (TokenType::Ident, "ten"),
-            (TokenType::Rparen, ")"),
+            (TokenType::RParen, ")"),
             (TokenType::Semicolon, ";"),
             (TokenType::Bang, "!"),
             (TokenType::Minus, "-"),
@@ -210,50 +239,50 @@ mod tests {
             (TokenType::Int, "5"),
             (TokenType::Semicolon, ";"),
             (TokenType::Int, "5"),
-            (TokenType::Lt, "<"),
+            (TokenType::LT, "<"),
             (TokenType::Int, "10"),
-            (TokenType::Gt, ">"),
+            (TokenType::GT, ">"),
             (TokenType::Int, "5"),
             (TokenType::Semicolon, ";"),
             (TokenType::If, "if"),
-            (TokenType::Lparen, "("),
+            (TokenType::LParen, "("),
             (TokenType::Int, "5"),
-            (TokenType::Lt, "<"),
+            (TokenType::LT, "<"),
             (TokenType::Int, "10"),
-            (TokenType::Rparen, ")"),
-            (TokenType::Lbrace, "{"),
+            (TokenType::RParen, ")"),
+            (TokenType::LBrace, "{"),
             (TokenType::Return, "return"),
             (TokenType::True, "true"),
             (TokenType::Semicolon, ";"),
-            (TokenType::Rbrace, "}"),
+            (TokenType::RBrace, "}"),
             (TokenType::Else, "else"),
-            (TokenType::Lbrace, "{"),
+            (TokenType::LBrace, "{"),
             (TokenType::Return, "return"),
             (TokenType::False, "false"),
             (TokenType::Semicolon, ";"),
-            // (TokenType::Rbrace, "}"),
-            // (TokenType::Int, "10"),
-            // (TokenType::Eq, "=="),
-            // (TokenType::Int, "10"),
-            // (TokenType::Semicolon, ";"),
-            // (TokenType::Int, "10"),
-            // (TokenType::NotEq, "!="),
-            // (TokenType::Int, "9"),
-            // (TokenType::Semicolon, ";"),
-            // (TokenType::Eof, "\0"),
+            (TokenType::RBrace, "}"),
+            (TokenType::Int, "10"),
+            (TokenType::Eq, "=="),
+            (TokenType::Int, "10"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::Int, "10"),
+            (TokenType::NotEq, "!="),
+            (TokenType::Int, "9"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::Eof, "\0"),
         ];
         for (i, (expected_type, expected_literal)) in tests.iter().enumerate() {
             let tok = lexer.next_token();
             // dbg!(&tok);
             assert_eq!(
-                tok.literal, *expected_literal,
-                "tests[{}] - literal wrong. expected={}, got={}",
-                i, expected_literal, tok.literal
-            );
-            assert_eq!(
                 tok.kind, *expected_type,
                 "tests[{}] - tokentype wrong. expected={:?}, got={:?}",
                 i, expected_type, tok.kind
+            );
+            assert_eq!(
+                tok.literal, *expected_literal,
+                "tests[{}] - literal wrong. expected={}, got={}",
+                i, expected_literal, tok.literal
             );
         }
     }
