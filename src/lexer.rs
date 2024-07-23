@@ -41,6 +41,12 @@ impl Lexer {
             ')' => new_token(TokenType::Rparen, self.char),
             ',' => new_token(TokenType::Comma, self.char),
             '+' => new_token(TokenType::Plus, self.char),
+            '-' => new_token(TokenType::Minus, self.char),
+            '!' => new_token(TokenType::Bang, self.char),
+            '/' => new_token(TokenType::Slash, self.char),
+            '*' => new_token(TokenType::Asterisk, self.char),
+            '<' => new_token(TokenType::Lt, self.char),
+            '>' => new_token(TokenType::Gt, self.char),
             '{' => new_token(TokenType::Lbrace, self.char),
             '}' => new_token(TokenType::Rbrace, self.char),
             '\0' => new_token(TokenType::Eof, '\0'),
@@ -145,11 +151,13 @@ mod tests {
     fn test_next_token_with_actual_syntax() {
         let input = "let five = 5;
         let ten = 10;
-        let add = fn(x, y) {
-            x + y;
+           let add = fn(x, y) {
+             x + y;
         };
-        let result = add(five, ten);
-        ";
+           let result = add(five, ten);
+           !-/*5;
+           5 < 10 > 5;";
+
         let mut lexer = Lexer::new(input);
         let tests = vec![
             (TokenType::Let, "let"),
@@ -188,11 +196,48 @@ mod tests {
             (TokenType::Ident, "ten"),
             (TokenType::Rparen, ")"),
             (TokenType::Semicolon, ";"),
-            (TokenType::Eof, "\0"),
+            (TokenType::Bang, "!"),
+            (TokenType::Minus, "-"),
+            (TokenType::Slash, "/"),
+            (TokenType::Asterisk, "*"),
+            (TokenType::Int, "5"),
+            (TokenType::Semicolon, ";"),
+            (TokenType::Int, "5"),
+            (TokenType::Lt, "<"),
+            (TokenType::Int, "10"),
+            (TokenType::Gt, ">"),
+            (TokenType::Int, "5"),
+            (TokenType::Semicolon, ";"),
+            // (TokenType::If, "if"),
+            // (TokenType::Lparen, "("),
+            // (TokenType::Int, "5"),
+            // (TokenType::Lt, "<"),
+            // (TokenType::Int, "10"),
+            // (TokenType::Rparen, ")"),
+            // (TokenType::Lbrace, "{"),
+            // (TokenType::Return, "return"),
+            // (TokenType::True, "true"),
+            // (TokenType::Semicolon, ";"),
+            // (TokenType::Rbrace, "}"),
+            // (TokenType::Else, "else"),
+            // (TokenType::Lbrace, "{"),
+            // (TokenType::Return, "return"),
+            // (TokenType::False, "false"),
+            // (TokenType::Semicolon, ";"),
+            // (TokenType::Rbrace, "}"),
+            // (TokenType::Int, "10"),
+            // (TokenType::Eq, "=="),
+            // (TokenType::Int, "10"),
+            // (TokenType::Semicolon, ";"),
+            // (TokenType::Int, "10"),
+            // (TokenType::NotEq, "!="),
+            // (TokenType::Int, "9"),
+            // (TokenType::Semicolon, ";"),
+            // (TokenType::Eof, "\0"),
         ];
         for (i, (expected_type, expected_literal)) in tests.iter().enumerate() {
             let tok = lexer.next_token();
-
+            // dbg!(&tok);
             assert_eq!(
                 tok.literal, *expected_literal,
                 "tests[{}] - literal wrong. expected={}, got={}",

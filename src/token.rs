@@ -21,6 +21,12 @@ pub enum TokenType {
     Int,
     Assign,
     Plus,
+    Minus,
+    Bang,
+    Asterisk,
+    Slash,
+    Lt,
+    Gt,
     Comma,
     Semicolon,
     Lparen,
@@ -37,6 +43,7 @@ impl TokenType {
         match ident {
             "fn" => TokenType::Function,
             "let" => TokenType::Let,
+            "=" => TokenType::Assign,
             _ => TokenType::Ident,
         }
     }
