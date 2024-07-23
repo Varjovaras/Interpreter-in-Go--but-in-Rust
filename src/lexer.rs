@@ -36,11 +36,11 @@ impl Lexer {
         let char = self.char;
         let token = match char {
             '=' => {
-                if self.peek_char() != Some('=') {
-                    new_token(TokenType::Assign, self.char_to_string())
-                } else {
+                if self.peek_char() == Some('=') {
                     self.read_char();
                     new_token(TokenType::Eq, "==".to_string())
+                } else {
+                    new_token(TokenType::Assign, self.char_to_string())
                 }
             }
             ';' => new_token(TokenType::Semicolon, self.char_to_string()),
@@ -76,9 +76,8 @@ impl Lexer {
                         kind: TokenType::Int,
                         literal: self.read_number(),
                     };
-                } else {
-                    return new_token(TokenType::Illegal, '_'.to_string());
                 }
+                return new_token(TokenType::Illegal, '_'.to_string());
             }
         };
         self.read_char();
@@ -121,18 +120,18 @@ impl Lexer {
     }
 }
 
-fn new_token(token_type: TokenType, char: String) -> Token {
+const fn new_token(token_type: TokenType, char: String) -> Token {
     Token {
         kind: token_type,
         literal: char,
     }
 }
 
-fn is_letter(ch: char) -> bool {
+const fn is_letter(ch: char) -> bool {
     ch.is_ascii_lowercase() || ch.is_ascii_uppercase() || ch == '_'
 }
 
-fn is_digit(ch: char) -> bool {
+const fn is_digit(ch: char) -> bool {
     ch.is_ascii_digit()
 }
 
@@ -183,7 +182,7 @@ mod tests {
            let result = add(five, ten);
            !-/*5;
            5 < 10 > 5;
-           
+
            if (5 < 10) {
                 return true;
            } else {

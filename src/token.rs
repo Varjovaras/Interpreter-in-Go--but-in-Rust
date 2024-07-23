@@ -5,7 +5,7 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn new(token_type: TokenType, literal: String) -> Self {
+    pub const fn new(token_type: TokenType, literal: String) -> Self {
         Self {
             kind: token_type,
             literal,
@@ -13,7 +13,8 @@ impl Token {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
+#[allow(clippy::module_name_repetitions)]
 pub enum TokenType {
     Illegal,
     Eof,
@@ -48,14 +49,14 @@ impl TokenType {
     fn from_keyword(ident: &str) -> Self {
         // dbg!(ident);
         match ident {
-            "fn" => TokenType::Function,
-            "let" => TokenType::Let,
-            "true" => TokenType::True,
-            "false" => TokenType::False,
-            "if" => TokenType::If,
-            "else" => TokenType::Else,
-            "return" => TokenType::Return,
-            _ => TokenType::Ident,
+            "fn" => Self::Function,
+            "let" => Self::Let,
+            "true" => Self::True,
+            "false" => Self::False,
+            "if" => Self::If,
+            "else" => Self::Else,
+            "return" => Self::Return,
+            _ => Self::Ident,
         }
     }
 }
