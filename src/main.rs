@@ -3,8 +3,20 @@
 
 #![allow(dead_code)]
 mod lexer;
+mod repl;
 mod token;
 
+use std::io::{self, BufReader, BufWriter};
+
 fn main() {
-    println!("Hello, world!");
+    println!("Hello! This is the Monkey programming language!");
+    println!("Feel free to type in commands");
+
+    let stdin = io::stdin();
+    let stdout = io::stdout();
+
+    let input = BufReader::new(stdin.lock());
+    let output = BufWriter::new(stdout.lock());
+
+    repl::start(input, output);
 }
