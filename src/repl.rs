@@ -2,7 +2,7 @@ use std::io::{BufRead, Write};
 
 use crate::{lexer::Lexer, token::TokenType};
 
-const PROMPT: &str = ">> ";
+const PROMPT: &str = "ali :D >> ";
 
 pub fn start<R: BufRead, W: Write>(input: R, mut output: W) {
     let mut scanner = input.lines();

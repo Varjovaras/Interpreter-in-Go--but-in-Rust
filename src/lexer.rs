@@ -77,7 +77,7 @@ impl Lexer {
                         literal: self.read_number(),
                     };
                 }
-                return new_token(TokenType::Illegal, '_'.to_string());
+                 new_token(TokenType::Illegal, self.char.to_string())
             }
         };
         self.read_char();

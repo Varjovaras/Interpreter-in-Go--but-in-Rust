@@ -2,11 +2,13 @@
 //25
 
 #![allow(dead_code)]
+use std::io::{self, BufReader, BufWriter};
+
 mod lexer;
 mod repl;
 mod token;
-
-use std::io::{self, BufReader, BufWriter};
+mod parser;
+mod ast;
 
 fn main() {
     println!("Hello! This is the Monkey programming language!");
