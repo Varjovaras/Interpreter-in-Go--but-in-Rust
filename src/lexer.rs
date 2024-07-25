@@ -140,6 +140,8 @@ mod tests {
     use super::*;
     use crate::token::TokenType;
 
+
+
     #[test]
     fn test_next_token_with_identifiers() {
         let input = "=+(){},;";
@@ -157,19 +159,7 @@ mod tests {
             (TokenType::Eof, "\0"),
         ];
 
-        for (i, (expected_type, expected_literal)) in tests.iter().enumerate() {
-            let tok = lexer.next_token();
-            assert_eq!(
-                tok.kind, *expected_type,
-                "tests[{}] - tokentype wrong. expected={:?}, got={:?}",
-                i, expected_type, tok.kind
-            );
-            assert_eq!(
-                tok.literal, *expected_literal,
-                "tests[{}] - literal wrong. expected={}, got={}",
-                i, expected_literal, tok.literal
-            );
-        }
+    run_tests(&tests, &mut lexer);
     }
 
     #[test]
@@ -270,12 +260,14 @@ mod tests {
             (TokenType::Semicolon, ";"),
             (TokenType::Eof, "\0"),
         ];
+       run_tests(&tests, &mut lexer);
+    }
+    fn run_tests(tests:  &[(TokenType, &str)], lexer: &mut Lexer) {
         for (i, (expected_type, expected_literal)) in tests.iter().enumerate() {
             let tok = lexer.next_token();
-            // dbg!(&tok);
             assert_eq!(
                 tok.kind, *expected_type,
-                "tests[{}] - tokentype wrong. expected={:?}, got={:?}",
+                "tests[{}] - token type wrong. expected={:?}, got={:?}",
                 i, expected_type, tok.kind
             );
             assert_eq!(
@@ -286,3 +278,4 @@ mod tests {
         }
     }
 }
+
