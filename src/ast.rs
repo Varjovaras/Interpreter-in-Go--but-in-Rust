@@ -1,7 +1,6 @@
 // Define the Token struct
-pub struct Token {
-    pub literal: String,
-}
+
+use crate::token::Token;
 
 // Define the Node trait
 pub trait Node {
