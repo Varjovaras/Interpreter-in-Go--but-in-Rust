@@ -1,9 +1,10 @@
 // Define the Token struct
 
 use crate::token::Token;
+use std::any::Any;
 
 // Define the Node trait
-pub trait Node {
+pub trait Node: Any {
     fn token_literal(&self) -> String;
 }
 

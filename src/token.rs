@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub kind: TokenType, // Use an enum for different token types
     pub literal: String,
@@ -13,8 +13,8 @@ impl Token {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
 #[allow(clippy::module_name_repetitions)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum TokenType {
     Illegal,
     Eof,
