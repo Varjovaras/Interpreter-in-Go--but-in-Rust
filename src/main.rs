@@ -1,7 +1,5 @@
 //https://edu.anarcho-copy.org/Programming%20Languages/Go/writing%20an%20INTERPRETER%20in%20go.pdf
-//25
-// #![allow(clippy::missing_panics_doc)]
-#![allow(dead_code)]
+//44
 use std::io::{self, BufReader, BufWriter};
 
 pub mod ast;
