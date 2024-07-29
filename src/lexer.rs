@@ -9,6 +9,7 @@ pub struct Lexer {
 }
 
 impl Lexer {
+    #[must_use]
     pub fn new(input: &str) -> Self {
         let mut a = Self {
             input: input.to_string(),
@@ -77,7 +78,7 @@ impl Lexer {
                         literal: self.read_number(),
                     };
                 }
-                 new_token(TokenType::Illegal, self.char.to_string())
+                new_token(TokenType::Illegal, self.char.to_string())
             }
         };
         self.read_char();
@@ -140,8 +141,6 @@ mod tests {
     use super::*;
     use crate::token::TokenType;
 
-
-
     #[test]
     fn test_next_token_with_identifiers() {
         let input = "=+(){},;";
@@ -159,7 +158,7 @@ mod tests {
             (TokenType::Eof, "\0"),
         ];
 
-    run_tests(&tests, &mut lexer);
+        run_tests(&tests, &mut lexer);
     }
 
     #[test]
@@ -260,9 +259,9 @@ mod tests {
             (TokenType::Semicolon, ";"),
             (TokenType::Eof, "\0"),
         ];
-       run_tests(&tests, &mut lexer);
+        run_tests(&tests, &mut lexer);
     }
-    fn run_tests(tests:  &[(TokenType, &str)], lexer: &mut Lexer) {
+    fn run_tests(tests: &[(TokenType, &str)], lexer: &mut Lexer) {
         for (i, (expected_type, expected_literal)) in tests.iter().enumerate() {
             let tok = lexer.next_token();
             assert_eq!(
@@ -278,4 +277,3 @@ mod tests {
         }
     }
 }
-

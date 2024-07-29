@@ -1,14 +1,14 @@
 //https://edu.anarcho-copy.org/Programming%20Languages/Go/writing%20an%20INTERPRETER%20in%20go.pdf
 //25
-
+#![allow(clippy::missing_panics_doc)]
 #![allow(dead_code)]
 use std::io::{self, BufReader, BufWriter};
 
-mod lexer;
-mod repl;
-mod token;
-mod parser;
-mod ast;
+pub mod ast;
+pub mod lexer;
+pub mod parser;
+pub mod repl;
+pub mod token;
 
 fn main() {
     println!("Hello! This is the Monkey programming language!");

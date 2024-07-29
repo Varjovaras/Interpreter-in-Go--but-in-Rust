@@ -5,6 +5,7 @@ pub struct Token {
 }
 
 impl Token {
+    #[must_use]
     pub const fn new(token_type: TokenType, literal: String) -> Self {
         Self {
             kind: token_type,
@@ -61,6 +62,7 @@ impl TokenType {
     }
 }
 
+#[must_use]
 pub fn lookup_ident(ident: &str) -> TokenType {
     TokenType::from_keyword(ident)
 }

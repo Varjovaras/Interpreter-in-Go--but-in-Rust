@@ -2,6 +2,7 @@
 
 use crate::token::Token;
 use std::any::Any;
+use std::fmt::Debug;
 
 // Define the Node trait
 pub trait Node: Any {
@@ -9,12 +10,14 @@ pub trait Node: Any {
 }
 
 // Define the Statement trait extending Node
-pub trait Statement: Node {
+pub trait Statement: Node + Debug {
     fn statement_node(&self);
+    fn as_any(&self) -> &dyn Any;
 }
 
 // Define the Expression trait extending Node
-pub trait Expression: Node {
+
+pub trait Expression: Node + Debug {
     fn expression_node(&self);
 }
 
@@ -32,9 +35,10 @@ impl Node for Program {
 }
 
 // Define the LetStatement struct
+#[derive(Debug)]
 pub struct LetStatement {
     pub token: Token, // the token.LET token
-    pub name: Box<Identifier>,
+    pub name: Identifier,
     pub value: Box<dyn Expression>,
 }
 
@@ -48,9 +52,13 @@ impl Node for LetStatement {
 // Implement Statement for LetStatement
 impl Statement for LetStatement {
     fn statement_node(&self) {}
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 // Define the Identifier struct
+#[derive(Debug)]
 pub struct Identifier {
     pub token: Token, // the token.IDENT token
     pub value: String,

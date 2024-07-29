@@ -7,10 +7,12 @@ pub struct Parser {
     l: Lexer,
     cur_token: Token,
     peek_token: Token,
+    errors: Vec<String>,
 }
 
 impl Parser {
     #[allow(unused_mut)]
+    #[must_use]
     pub fn new(mut l: Lexer) -> Self {
         let mut p = Self {
             l,
@@ -22,6 +24,7 @@ impl Parser {
                 kind: TokenType::Eof,
                 literal: String::new(),
             },
+            errors: Vec::new(),
         };
         // Read two tokens, so cur_token and peek_token are both set
         p.next_token();
@@ -56,18 +59,18 @@ impl Parser {
     }
 
     fn parse_let_statement(&mut self) -> Option<Box<dyn Statement>> {
-        let mut stmt = LetStatement {
+        let mut stmt: LetStatement = LetStatement {
             token: self.cur_token.clone(),
-            name: Box::new(Identifier {
+            name: Identifier {
                 token: Token {
-                    kind: TokenType::Illegal,
+                    kind: TokenType::Let, // Initially set to Illegal
                     literal: String::new(),
                 },
                 value: String::new(),
-            }),
+            },
             value: Box::new(Identifier {
                 token: Token {
-                    kind: TokenType::Illegal,
+                    kind: TokenType::Let, // Initially set to Illegal
                     literal: String::new(),
                 },
                 value: String::new(),
@@ -78,10 +81,10 @@ impl Parser {
             return None;
         }
 
-        stmt.name = Box::new(Identifier {
+        stmt.name = Identifier {
             token: self.cur_token.clone(),
             value: self.cur_token.literal.clone(),
-        });
+        };
 
         if !self.expect_peek(&TokenType::Assign) {
             return None;
@@ -110,12 +113,22 @@ impl Parser {
             false
         }
     }
+
+    #[must_use]
+    pub const fn errors(&self) -> &Vec<String> {
+        &self.errors
+    }
+
+    pub fn peek_error(&mut self, expected: &str, got: &str) {
+        let msg = format!("expected next token to be {expected:?}, got {got:?} instead",);
+        self.errors.push(msg);
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::{LetStatement, Statement};
+    use crate::ast::{LetStatement, Node, Statement};
     use crate::lexer::Lexer;
 
     #[test]
@@ -126,7 +139,7 @@ mod tests {
         let foobar = 838383;
         ";
 
-        let mut lexer = Lexer::new(input);
+        let lexer = Lexer::new(input);
         let mut parser = Parser::new(lexer);
         let program = parser.parse_program();
 
@@ -137,26 +150,23 @@ mod tests {
             program.statements.len()
         );
 
-        let tests = vec!["x", "y", "foobar"];
+        let tests = ["x", "y", "foobar"];
 
         for (i, &expected_identifier) in tests.iter().enumerate() {
             let stmt = &program.statements[i];
-            assert!(test_let_statement(stmt, expected_identifier));
+            assert!(test_let_statement(stmt.as_ref(), expected_identifier));
         }
     }
 
-    fn test_let_statement(s: &Box<dyn Statement>, name: &str) -> bool {
+    fn test_let_statement(s: &dyn Statement, name: &str) -> bool {
         if s.token_literal() != "let" {
             eprintln!("s.token_literal not 'let'. got={}", s.token_literal());
             return false;
         }
 
-        let let_stmt = match s.as_any().downcast_ref::<LetStatement>() {
-            Some(stmt) => stmt,
-            None => {
-                eprintln!("s not LetStatement. got={:?}", s);
-                return false;
-            }
+        let Some(let_stmt) = s.as_any().downcast_ref::<LetStatement>() else {
+            eprintln!("s not LetStatement. got={s:?}");
+            return false;
         };
 
         if let_stmt.name.value != name {
