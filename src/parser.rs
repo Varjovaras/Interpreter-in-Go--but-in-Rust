@@ -110,6 +110,7 @@ impl Parser {
             self.next_token();
             true
         } else {
+            self.peek_error(t);
             false
         }
     }
@@ -119,8 +120,11 @@ impl Parser {
         &self.errors
     }
 
-    pub fn peek_error(&mut self, expected: &str, got: &str) {
-        let msg = format!("expected next token to be {expected:?}, got {got:?} instead",);
+    pub fn peek_error(&mut self, expected: &TokenType) {
+        let msg = format!(
+            "expected next token to be {:?}, got {:?} instead",
+            expected, self.peek_token.kind
+        );
         self.errors.push(msg);
     }
 }
@@ -142,6 +146,7 @@ mod tests {
         let lexer = Lexer::new(input);
         let mut parser = Parser::new(lexer);
         let program = parser.parse_program();
+        check_parser_errors(&parser);
 
         assert_eq!(
             program.statements.len(),
@@ -187,5 +192,13 @@ mod tests {
         }
 
         true
+    }
+
+    fn check_parser_errors(parser: &Parser) {
+        let errors = parser.errors();
+        if errors.is_empty() {
+            return;
+        }
+        panic!("parser has {} errors: {:?}", errors.len(), errors);
     }
 }
