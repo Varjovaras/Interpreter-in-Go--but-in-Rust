@@ -1,5 +1,5 @@
 // parser.rs
-use crate::ast::{Identifier, LetStatement, Program, Statement};
+use crate::ast::{Identifier, LetStatement, Program, ReturnStatement, Statement};
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 
@@ -54,6 +54,7 @@ impl Parser {
     fn parse_statement(&mut self) -> Option<Box<dyn Statement>> {
         match self.cur_token.kind {
             TokenType::Let => self.parse_let_statement(),
+            TokenType::Return => self.parse_return_statement(),
             _ => None,
         }
     }
@@ -63,14 +64,14 @@ impl Parser {
             token: self.cur_token.clone(),
             name: Identifier {
                 token: Token {
-                    kind: TokenType::Let, // Initially set to Illegal
+                    kind: TokenType::Illegal, // Initially set to Illegal
                     literal: String::new(),
                 },
                 value: String::new(),
             },
             value: Box::new(Identifier {
                 token: Token {
-                    kind: TokenType::Let, // Initially set to Illegal
+                    kind: TokenType::Illegal, // Initially set to Illegal
                     literal: String::new(),
                 },
                 value: String::new(),
@@ -89,6 +90,29 @@ impl Parser {
         if !self.expect_peek(&TokenType::Assign) {
             return None;
         }
+
+        while !self.cur_token_is(&TokenType::Semicolon) {
+            self.next_token();
+        }
+
+        Some(Box::new(stmt))
+    }
+
+    #[allow(clippy::unnecessary_wraps)]
+    fn parse_return_statement(&mut self) -> Option<Box<dyn Statement>> {
+        let stmt = ReturnStatement {
+            token: self.cur_token.clone(),
+            return_value: Box::new(Identifier {
+                token: Token {
+                    kind: TokenType::Return,
+                    literal: String::new(),
+                },
+                value: String::new(),
+            }),            // You can add an expression field here if needed
+        };
+
+        self.next_token();
+
 
         while !self.cur_token_is(&TokenType::Semicolon) {
             self.next_token();
@@ -132,7 +156,7 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::{LetStatement, Node, Statement};
+    use crate::ast::{LetStatement, Node, ReturnStatement, Statement};
     use crate::lexer::Lexer;
 
     #[test]
@@ -200,5 +224,39 @@ mod tests {
             return;
         }
         panic!("parser has {} errors: {:?}", errors.len(), errors);
+    }
+
+    #[test]
+    fn test_return_statements() {
+        let input = "
+    return 5;
+    return 10;
+    return 993322;
+    ";
+
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+        let program = parser.parse_program();
+        check_parser_errors(&parser);
+
+        assert_eq!(
+            program.statements.len(),
+            3,
+            "program.statements does not contain 3 statements. got={}",
+            program.statements.len()
+        );
+
+        for stmt in program.statements {
+            let Some(return_stmt) = stmt.as_any().downcast_ref::<ReturnStatement>() else {
+                panic!("stmt not ReturnStatement. got={stmt:?}");
+            };
+
+            assert_eq!(
+                return_stmt.token_literal(),
+                "return",
+                "returnStmt.token_literal not 'return', got={}",
+                return_stmt.token_literal()
+            );
+        }
     }
 }
